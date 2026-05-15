@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mt-5">
+    <div class="col-md-8 offset-md-2 text-center">
+        <h1 class="display-4 fw-bold text-primary mb-4">Master Your Time with TaskMaster</h1>
+        <p class="lead mb-5">A modern, complete solution for managing your tasks, deadlines, and productivity in one elegant platform.</p>
+        
+        <div class="row g-4 mt-2">
+            <div class="col-md-4">
+                <i class="fas fa-list-check fa-3x text-success mb-3"></i>
+                <h3>Organize</h3>
+                <p class="text-muted">Keep track of everything you need to do with powerful categorization and priority settings.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="fas fa-calendar-alt fa-3x text-info mb-3"></i>
+                <h3>Plan</h3>
+                <p class="text-muted">Visualize your schedule with interactive calendars and upcoming deadline indicators.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                <h3>Achieve</h3>
+                <p class="text-muted">Boost your productivity with integrated Pomodoro timers and insightful completion stats.</p>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-5 py-3 me-3 rounded-pill shadow">Get Started for Free</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary btn-lg px-5 py-3 rounded-pill shadow-sm">Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

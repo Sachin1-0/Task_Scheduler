@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="card-title mb-0">{{ legend }}</h3>
+                    <a href="{{ url_for('tasks.list_tasks') }}" class="btn btn-outline-secondary btn-sm">Cancel</a>
+                </div>
+                
+                <form method="POST" action="" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label fw-bold") }} <span class="text-danger">*</span>
+                        {% if form.title.errors %}
+                            {{ form.title(class="form-control is-invalid", required=True) }}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            {{ form.title(class="form-control", required=True) }}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.description.label(class="form-label fw-bold") }}
+                        {{ form.description(class="form-control", rows="3") }}
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            {{ form.due_date.label(class="form-label fw-bold") }} <span class="text-danger">*</span>
+                            {{ form.due_date(class="form-control", type="date", required=True) }}
+                            {% if form.due_date.errors %}
+                                <div class="text-danger small mt-1">{% for error in form.due_date.errors %}<span>{{ error }}</span>{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.due_time.label(class="form-label fw-bold") }} <span class="text-danger">*</span>
+                            {{ form.due_time(class="form-control", type="time", required=True) }}
+                            {% if form.due_time.errors %}
+                                <div class="text-danger small mt-1">{% for error in form.due_time.errors %}<span>{{ error }}</span>{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            {{ form.priority.label(class="form-label fw-bold") }} <span class="text-danger">*</span>
+                            {{ form.priority(class="form-select", required=True) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.status.label(class="form-label fw-bold") }}
+                            {{ form.status(class="form-select") }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form.category_id.label(class="form-label fw-bold") }}
+                            {{ form.category_id(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            {{ form.recurrence.label(class="form-label fw-bold") }}
+                            {{ form.recurrence(class="form-select") }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.attachment.label(class="form-label fw-bold") }}
+                            {{ form.attachment(class="form-control") }}
+                            {% if form.attachment.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.attachment.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="text-end">
+                        {{ form.submit(class="btn btn-primary px-4") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

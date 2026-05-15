@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body py-5">
+                <div class="position-relative d-inline-block mb-3">
+                    <img class="rounded-circle profile-img-large shadow-sm" src="{{ image_file }}">
+                    <button class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle" data-bs-toggle="modal" data-bs-target="#photoModal" title="Change Photo" style="width: 35px; height: 35px;">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <h3 class="card-title">{{ current_user.username }}</h3>
+                <p class="text-muted">{{ current_user.email }}</p>
+                <div class="mt-2 mb-4">
+                    <p class="small text-muted mb-0">Member since {{ current_user.created_at.strftime('%B %Y') }}</p>
+                </div>
+                
+                <div class="d-flex justify-content-center gap-3">
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#profileModal">
+                        <i class="fas fa-user-edit"></i> Update Profile
+                    </button>
+                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#passwordModal">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Profile Modal -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Profile Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.update_profile') }}">
+                <div class="modal-body text-start">
+                    {{ profile_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ profile_form.username.label(class="form-label fw-bold") }}
+                        {{ profile_form.username(class="form-control", required=True) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ profile_form.email.label(class="form-label fw-bold") }}
+                        {{ profile_form.email(class="form-control", required=True) }}
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ profile_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="passwordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.update_password') }}">
+                <div class="modal-body text-start">
+                    {{ password_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ password_form.old_password.label(class="form-label fw-bold") }}
+                        {{ password_form.old_password(class="form-control", required=True) }}
+                    </div>
+                    <div class="mb-3">
+                        {{ password_form.new_password.label(class="form-label fw-bold") }}
+                        {{ password_form.new_password(class="form-control", required=True) }}
+                        <small class="text-muted d-block mt-1">Min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special character.</small>
+                    </div>
+                    <div class="mb-3">
+                        {{ password_form.confirm_password.label(class="form-label fw-bold") }}
+                        {{ password_form.confirm_password(class="form-control", required=True) }}
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ password_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Update Photo Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Change Profile Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('main.update_photo') }}" enctype="multipart/form-data">
+                <div class="modal-body text-center">
+                    {{ photo_form.hidden_tag() }}
+                    <img id="photo-preview" src="{{ image_file }}" class="rounded-circle profile-img-large mb-4 shadow-sm" alt="Preview">
+                    <div class="mb-3 text-start">
+                        {{ photo_form.picture.label(class="form-label fw-bold") }}
+                        {{ photo_form.picture(class="form-control", accept=".jpg,.jpeg,.png", id="photo-upload", required=True) }}
+                        <small class="text-muted d-block mt-1">Max file size: 5MB. Formats: JPG, JPEG, PNG.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    {{ photo_form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Preview image before upload and validate size
+    document.getElementById('photo-upload').addEventListener('change', function(e) {
+        if (e.target.files && e.target.files[0]) {
+            const maxAllowedSize = 5 * 1024 * 1024; // 5MB
+            if (e.target.files[0].size > maxAllowedSize) {
+                alert("File is too large! Maximum allowed size is 5MB.");
+                e.target.value = "";
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photo-preview').src = e.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+</script>
+{% endblock %}

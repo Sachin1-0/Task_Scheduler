@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Tasks</h2>
+    <div>
+        <a href="{{ url_for('tasks.export_csv') }}" class="btn btn-outline-secondary me-2"><i class="fas fa-file-export"></i> Export CSV</a>
+        <a href="{{ url_for('tasks.new_task') }}" class="btn btn-primary"><i class="fas fa-plus"></i> New Task</a>
+    </div>
+</div>
+
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('tasks.list_tasks') }}" class="row g-3">
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search tasks..." value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" {% if request.args.get('status') == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="In Progress" {% if request.args.get('status') == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Completed" {% if request.args.get('status') == 'Completed' %}selected{% endif %}>Completed</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="priority" class="form-select">
+                    <option value="">All Priorities</option>
+                    <option value="Low" {% if request.args.get('priority') == 'Low' %}selected{% endif %}>Low</option>
+                    <option value="Medium" {% if request.args.get('priority') == 'Medium' %}selected{% endif %}>Medium</option>
+                    <option value="High" {% if request.args.get('priority') == 'High' %}selected{% endif %}>High</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-secondary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Title</th>
+                    <th>Due Date</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                {% set is_overdue = false %}
+                {% if task.status != 'Completed' and task.due_date and task.due_time %}
+                    {% set task_dt_str = task.due_date.strftime('%Y-%m-%d') ~ ' ' ~ task.due_time.strftime('%H:%M:%S') %}
+                    {% set task_dt = datetime.strptime(task_dt_str, '%Y-%m-%d %H:%M:%S') %}
+                    {% if task_dt < now %}
+                        {% set is_overdue = true %}
+                    {% endif %}
+                {% endif %}
+                <tr class="task-row {% if is_overdue %}table-danger{% endif %}">
+                    <td>
+                        <div class="fw-bold">{{ task.title }}</div>
+                        <div class="small text-muted text-truncate" style="max-width: 250px;">{{ task.description }}</div>
+                    </td>
+                    <td>
+                        {% if task.due_date %}
+                            {{ task.due_date.strftime('%Y-%m-%d') }}
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.priority == 'High' %}
+                            <span class="badge bg-danger">High</span>
+                        {% elif task.priority == 'Medium' %}
+                            <span class="badge bg-warning text-dark">Medium</span>
+                        {% else %}
+                            <span class="badge bg-info text-dark">Low</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.status == 'Completed' %}
+                            <span class="badge bg-success"><i class="fas fa-check"></i> Completed</span>
+                        {% elif task.status == 'In Progress' %}
+                            <span class="badge bg-primary">In Progress</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if task.category %}
+                            <span class="badge bg-secondary">{{ task.category.name }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if task.attachment %}
+                            <a href="{{ url_for('static', filename='uploads/' + task.attachment) }}" target="_blank" class="btn btn-sm btn-outline-info" title="View Attachment"><i class="fas fa-paperclip"></i></a>
+                        {% endif %}
+                        <a href="{{ url_for('tasks.update_task', task_id=task.id) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ task.id }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">
+                        No tasks found. Create one to get started!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% for task in tasks %}
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal{{ task.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Delete Task?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <i class="fas fa-exclamation-circle text-danger fa-3x mb-3"></i>
+                <p>Are you sure you want to delete the task <strong>"{{ task.title }}"</strong>?</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{{ url_for('tasks.delete_task', task_id=task.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
